@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>余量流转 - 闲置物品与技能共享平台</title>
+    <style>
+      /* 添加全局点击反馈 */
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+      a, button, .clickable {
+        -webkit-tap-highlight-color: rgba(46, 204, 113, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // 调试：监听所有点击事件
+      document.addEventListener('click', function(e) {
+        console.log('Document click detected:', {
+          target: e.target.tagName,
+          className: e.target.className,
+          href: e.target.href,
+          id: e.target.id,
+          timestamp: new Date().toISOString()
+        });
+      }, true); // 使用捕获阶段
+    </script>
+  </body>
+</html>
