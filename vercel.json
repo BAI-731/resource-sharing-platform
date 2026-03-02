@@ -1,4 +1,0 @@
-{
-  "buildCommand": "cd resource-sharing && npm run build",
-  "outputDirectory": "resource-sharing/dist"
-}
