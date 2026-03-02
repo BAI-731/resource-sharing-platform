@@ -33,6 +33,7 @@ export function PublishPage() {
 
     const newResource = {
       id: generateId(),
+      sellerId: 'current-user',
       type: resourceType,
       title: formData.title,
       description: formData.description,

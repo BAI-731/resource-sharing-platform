@@ -9,7 +9,7 @@ export function TestLocation() {
     setLoading(true);
     setResult('');
 
-    const AMAP_KEY = 'af1a9391257bf08e0e650f5c5870d338';
+    const AMAP_KEY = import.meta.env.VITE_AMAP_KEY || 'af1a9391257bf08e0e650f5c5870d338';
     const AMAP_REVERSE_GEOCODING_URL = 'https://restapi.amap.com/v3/geocode/regeo';
 
     // 测试海南大学的坐标
@@ -57,7 +57,7 @@ export function TestLocation() {
           <h3 className="font-semibold mb-2">测试说明:</h3>
           <ul className="text-sm space-y-1">
             <li>• 测试坐标: 海南大学 (20.0440, 110.3190)</li>
-            <li>• API密钥: {AMAP_KEY}</li>
+            <li>• API密钥: {import.meta.env.VITE_AMAP_KEY || 'af1a9391257bf08e0e650f5c5870d338'}</li>
             <li>• API类型: Web服务</li>
             <li>• 期望结果: 返回海南大学的详细地址信息</li>
           </ul>

@@ -94,12 +94,12 @@ export function ExchangeDetailPage() {
             返回
           </button>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={toggleFavorite}>
+            <Button variant="ghost" onClick={toggleFavorite}>
               <Heart
                 className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`}
               />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost">
               <Share2 className="w-5 h-5" />
             </Button>
           </div>
@@ -177,7 +177,7 @@ export function ExchangeDetailPage() {
             {/* 标签 */}
             <div className="flex flex-wrap gap-2">
               {item.category && (
-                <Badge variant="outline">{item.category}</Badge>
+                <Badge>{item.category}</Badge>
               )}
               {item.deliveryType === 'pickup' && (
                 <Badge className="bg-green-100 text-green-800">仅自提</Badge>

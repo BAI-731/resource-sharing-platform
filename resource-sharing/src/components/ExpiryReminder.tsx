@@ -22,10 +22,10 @@ export function ExpiryReminder() {
     const expiring = allResources
       .filter(r => r.expiresAt)
       .filter(r => {
-        const expiryDate = new Date(r.expiresAt);
+        const expiryDate = new Date(r.expiresAt || '');
         return expiryDate <= oneWeekLater && expiryDate > now;
       })
-      .sort((a, b) => new Date(a.expiresAt!).getTime() - new Date(b.expiresAt!).getTime());
+      .sort((a, b) => new Date(a.expiresAt || '').getTime() - new Date(b.expiresAt || '').getTime());
 
     // 已过期的资源
     const expired = allResources

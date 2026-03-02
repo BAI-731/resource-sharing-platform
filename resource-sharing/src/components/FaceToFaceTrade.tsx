@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { QrCode, CheckCircle, AlertCircle, MapPin, Clock, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Modal } from '@/components/ui/Modal';
 
 interface FaceToFaceTradeProps {
   resourceId: string;

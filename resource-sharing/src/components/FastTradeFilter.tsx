@@ -36,7 +36,7 @@ export function FastTradeFilter({ resources, onFilteredResources, userLocation }
   };
 
   const getDeliveryLabel = (item: any) => {
-    const labels: string[] = [];
+    const labels: {text: string; color: string}[] = [];
 
     // 极速标签
     if (item.deliverySpeed === 'fast') {

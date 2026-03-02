@@ -215,6 +215,7 @@ export const initialSkills: Resource[] = [
     createdAt: '2024-01-15',
     views: 456,
     isFeatured: true,
+    sellerId: 'user-11',
   },
   {
     id: 'skill-2',
@@ -231,6 +232,7 @@ export const initialSkills: Resource[] = [
     createdAt: '2024-01-14',
     views: 289,
     isFeatured: true,
+    sellerId: 'user-12',
   },
   {
     id: 'skill-3',
@@ -247,6 +249,7 @@ export const initialSkills: Resource[] = [
     createdAt: '2024-01-13',
     views: 378,
     isFeatured: true,
+    sellerId: 'user-13',
   },
   {
     id: 'skill-4',
@@ -263,6 +266,7 @@ export const initialSkills: Resource[] = [
     createdAt: '2024-01-12',
     views: 167,
     isFeatured: false,
+    sellerId: 'user-14',
   },
   {
     id: 'skill-5',
@@ -279,6 +283,7 @@ export const initialSkills: Resource[] = [
     createdAt: '2024-01-11',
     views: 198,
     isFeatured: false,
+    sellerId: 'user-15',
   },
   {
     id: 'skill-6',
@@ -295,5 +300,6 @@ export const initialSkills: Resource[] = [
     createdAt: '2024-01-10',
     views: 145,
     isFeatured: false,
+    sellerId: 'user-16',
   },
 ];

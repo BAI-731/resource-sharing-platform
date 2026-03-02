@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Search, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { Modal } from '@/components/ui/Modal';
 import { Resource } from '@/types';
 
 interface ExchangeMatcherProps {
@@ -187,7 +186,7 @@ export function ExchangeMatcher({ currentItem, allItems, onExchangeRequest }: Ex
                       {currentItem.description}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline">
+                      <Badge>
                         {currentItem.campusZone && currentItem.campusZone}
                       </Badge>
                       {currentItem.buildingName && (
