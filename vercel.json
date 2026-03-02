@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd resource-sharing && npm run build",
+  "outputDirectory": "resource-sharing/dist",
+  "installCommand": "cd resource-sharing && npm install",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/resource-sharing/$1" }
+  ]
+}
