@@ -97,10 +97,10 @@ export function searchResources(
 
     // 评分和浏览量加分
     if (resource.rating) {
-      score += resource.rating * 5;
+      score = score + resource.rating * 5;
     }
     if (resource.views > 0) {
-      score += Math.min(resource.views / 10, 20);
+      score = score + Math.min(resource.views / 10, 20);
     }
 
     if (score > 0 || !normalizedQuery) {
