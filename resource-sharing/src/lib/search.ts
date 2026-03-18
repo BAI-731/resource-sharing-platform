@@ -100,46 +100,6 @@ export function searchResources(
   return results.sort((a, b) => b.score - a.score);
 }
 
-export function highlightMatches(text: string, query: string): React.ReactNode {
-  if (!query.trim()) return text;
-
-  const normalizedQuery = query.toLowerCase().trim();
-  const parts: string[] = [];
-  let remainingText = text;
-
-  while (remainingText.length > 0) {
-    const lowerText = remainingText.toLowerCase();
-    let index = -1;
-
-    for (let i = 0; i < normalizedQuery.length; i++) {
-      const pos = lowerText.indexOf(normalizedQuery[i], index + 1);
-      if (pos !== -1) {
-        if (index === -1) {
-          parts.push(remainingText.substring(0, pos));
-        } else {
-          parts.push(remainingText.substring(index, pos));
-        }
-        remainingText = remainingText.substring(pos + normalizedQuery[i].length);
-        index = pos + normalizedQuery[i].length;
-      }
-    }
-
-    if (index === -1 && parts.length === 0) {
-      parts.push(remainingText);
-    }
-
-    return parts.map((part, idx) => {
-      const isMatch = part.toLowerCase() === normalizedQuery;
-      return isMatch ? (
-        <mark key={idx} className="bg-yellow-200 text-yellow-800 px-1 rounded">
-          {part}
-        </mark>
-      ) : (
-        <span key={idx}>{part}</span>
-      );
-    });
-  }
-
 export function getSearchSuggestions(resources: Resource[], query: string, limit = 5): string[] {
   const normalizedQuery = query.toLowerCase().trim();
   if (!normalizedQuery) return [];
