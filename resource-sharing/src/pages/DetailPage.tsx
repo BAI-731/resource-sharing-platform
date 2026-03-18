@@ -1,19 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Heart, Eye, MapPin, Calendar, Phone, Mail, Share2, Package, Sparkles, Star, ArrowRightLeft } from 'lucide-react';
+import { ArrowLeft, Heart, Eye, MapPin, Calendar, Phone, Mail, Share2, Package, Sparkles, Star, ArrowRightLeft, ShoppingBag } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ReviewForm } from '@/components/ReviewForm';
 import { ExchangeRequest } from '@/components/ExchangeRequest';
 import { ITEM_CATEGORIES, SKILL_CATEGORIES } from '@/types';
 import { formatPrice, formatDate, cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 
 export function DetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { state, dispatch, isFavorite, addReview } = useApp();
+  const { user, isAuthenticated } = useAuth();
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  const canPurchase = isAuthenticated && user && resource && user.id !== resource.sellerId;
 
   // 通过路由路径判断资源类型
   const isItemRoute = location.pathname.startsWith('/items');
@@ -56,6 +62,38 @@ export function DetailPage() {
       alert('链接已复制到剪贴板');
     } catch {
       console.error('Failed to copy');
+    }
+  };
+
+  const handlePurchase = async () => {
+    if (!isAuthenticated) {
+      navigate('/auth', { state: { from: location.pathname } });
+      return;
+    }
+
+    if (!user || !resource) return;
+
+    setIsPurchasing(true);
+
+    try {
+      const { error } = await supabase.from('orders').insert({
+        buyer_id: user.id,
+        seller_id: resource.sellerId,
+        resource_id: resource.id,
+        type: 'purchase',
+        status: 'pending',
+        delivery_type: 'both',
+      });
+
+      if (error) throw error;
+
+      alert('下单成功！请在"我的订单"中查看详情');
+      navigate('/orders');
+    } catch (error) {
+      console.error('下单失败:', error);
+      alert('下单失败，请重试');
+    } finally {
+      setIsPurchasing(false);
     }
   };
 
@@ -177,11 +215,27 @@ export function DetailPage() {
 
             {/* 操作按钮 */}
             <div className="flex flex-col sm:flex-row gap-4">
+              {canPurchase && (
+                <Button
+                  size="lg"
+                  variant="primary"
+                  onClick={handlePurchase}
+                  disabled={isPurchasing}
+                  className="flex-1 gap-2"
+                >
+                  {isPurchasing ? '处理中...' : (
+                    <>
+                      <ShoppingBag className="w-5 h-5" />
+                      立即购买
+                    </>
+                  )}
+                </Button>
+              )}
               <Button
                 size="lg"
                 onClick={handleFavorite}
-                variant={favorite ? 'secondary' : 'primary'}
-                className="flex-1 gap-2"
+                variant={favorite ? 'secondary' : 'outline'}
+                className={canPurchase ? '' : 'flex-1 gap-2'}
               >
                 <Heart className={cn('w-5 h-5', favorite && 'fill-current')} />
                 {favorite ? '取消收藏' : '立即收藏'}

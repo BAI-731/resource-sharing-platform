@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AppProvider } from '@/context/AppContext';
+import { AuthProvider } from '@/context/AuthContext';
+import { ToastProvider } from '@/components/ui/Toast';
+import { AuthGuard } from '@/components/AuthGuard';
 import { Navbar } from '@/components/Navbar';
 import { HomePage } from '@/pages/HomePage';
 import { ItemsPage } from '@/pages/ItemsPage';
@@ -9,19 +12,19 @@ import { PublishPage } from '@/pages/PublishPage';
 import { FavoritesPage } from '@/pages/FavoritesPage';
 import { ExchangePage } from '@/pages/ExchangePage';
 import { ExchangeDetailPage } from '@/pages/ExchangeDetailPage';
-import { TestLocation } from '@/pages/TestLocation';
-import { TestClick } from '@/pages/TestClick';
-import { SimpleTest } from '@/pages/SimpleTest';
+import { AuthPage } from '@/pages/AuthPage';
+import { ProfilePage } from '@/pages/ProfilePage';
+import { OrdersPage } from '@/pages/OrdersPage';
+import { MessagesPage } from '@/pages/MessagesPage';
 
 function AppContent() {
   const location = useLocation();
-
-  console.log('Route changed to:', location.pathname);
 
   return (
     <div className="min-h-screen bg-background pt-16" key={location.pathname}>
       <Navbar />
       <Routes>
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/items" element={<ItemsPage />} />
         <Route path="/skills" element={<SkillsPage />} />
@@ -29,24 +32,62 @@ function AppContent() {
         <Route path="/exchange/:id" element={<ExchangeDetailPage />} />
         <Route path="/items/:id" element={<DetailPage />} />
         <Route path="/skills/:id" element={<DetailPage />} />
-        <Route path="/publish" element={<PublishPage />} />
-        <Route path="/favorites" element={<FavoritesPage />} />
-        <Route path="/test-location" element={<TestLocation />} />
-        <Route path="/test-click" element={<TestClick />} />
-        <Route path="/simple-test" element={<SimpleTest />} />
+        <Route
+          path="/publish"
+          element={
+            <AuthGuard>
+              <PublishPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <AuthGuard>
+              <FavoritesPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <AuthGuard>
+              <ProfilePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <AuthGuard>
+              <OrdersPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <AuthGuard>
+              <MessagesPage />
+            </AuthGuard>
+          }
+        />
       </Routes>
     </div>
   );
 }
 
 function App() {
-  console.log('App rendering');
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </AppProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <AppProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </AppProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

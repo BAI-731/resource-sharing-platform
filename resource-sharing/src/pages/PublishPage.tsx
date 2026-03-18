@@ -2,16 +2,36 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Upload, Image as ImageIcon, MapPin } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
 import { ITEM_CATEGORIES, SKILL_CATEGORIES, CAMPUS_ZONES, ResourceType, ItemCategory, SkillCategory, CampusZone } from '@/types';
 import { generateId, cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 
 export function PublishPage() {
   const navigate = useNavigate();
   const { dispatch } = useApp();
+  const { user, isAuthenticated } = useAuth();
   const [resourceType, setResourceType] = useState<ResourceType>('item');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">请先登录</h2>
+          <p className="text-gray-600 mb-6">登录后才能发布资源</p>
+          <button
+            onClick={() => navigate('/auth')}
+            className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition"
+          >
+            去登录
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const [formData, setFormData] = useState({
     title: '',
@@ -27,39 +47,77 @@ export function PublishPage() {
 
   const categories = resourceType === 'item' ? ITEM_CATEGORIES : SKILL_CATEGORIES;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const newResource = {
-      id: generateId(),
-      sellerId: 'current-user',
-      type: resourceType,
-      title: formData.title,
-      description: formData.description,
-      price: Number(formData.price) || 0,
-      image: formData.image,
-      category: formData.category as ItemCategory | SkillCategory,
-      contact: formData.contact,
-      location: formData.location || '清华大学',
-      campusZone: formData.campusZone,
-      buildingName: formData.buildingName,
-      createdAt: new Date().toISOString().split('T')[0],
-      views: 0,
-      isFeatured: false,
-    };
-
-    if (resourceType === 'item') {
-      dispatch({ type: 'ADD_ITEM', payload: newResource });
-    } else {
-      dispatch({ type: 'ADD_SKILL', payload: newResource });
+    if (!user) {
+      alert('请先登录');
+      setIsSubmitting(false);
+      return;
     }
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const { data, error } = await supabase.from('resources').insert({
+        seller_id: user.id,
+        type: resourceType,
+        title: formData.title,
+        description: formData.description,
+        price: Number(formData.price) || 0,
+        image_url: formData.image,
+        category: formData.category,
+        contact: formData.contact,
+        location: formData.location || '清华大学',
+        campus_zone: formData.campusZone,
+        building_name: formData.buildingName,
+        views: 0,
+        is_featured: false,
+        available_for_exchange: false,
+        delivery_type: 'both',
+        delivery_speed: 'normal',
+        is_free_gift: Number(formData.price) === 0,
+        allow_bundle: false,
+      }).select().single();
+
+      if (error) throw error;
+
+      const newResource = {
+        id: data.id,
+        sellerId: data.seller_id,
+        type: data.type as ResourceType,
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        image: data.image_url,
+        category: data.category,
+        contact: data.contact,
+        location: data.location,
+        campusZone: data.campus_zone,
+        buildingName: data.building_name,
+        views: data.views,
+        isFeatured: data.is_featured,
+        availableForExchange: data.available_for_exchange,
+        deliveryType: data.delivery_type,
+        deliverySpeed: data.delivery_speed,
+        isFreeGift: data.is_free_gift,
+        allowBundle: data.allow_bundle,
+        createdAt: data.created_at,
+      };
+
+      if (resourceType === 'item') {
+        dispatch({ type: 'ADD_ITEM', payload: newResource });
+      } else {
+        dispatch({ type: 'ADD_SKILL', payload: newResource });
+      }
+
       alert('发布成功！');
       navigate(resourceType === 'item' ? '/items' : '/skills');
-    }, 500);
+    } catch (error) {
+      console.error('发布失败:', error);
+      alert('发布失败，请重试');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

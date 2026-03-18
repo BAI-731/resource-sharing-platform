@@ -1,20 +1,31 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Plus, Heart, Home, Package, Sparkles, ArrowRightLeft, Menu, X } from 'lucide-react';
+import { Search, Plus, Heart, Home, Package, Sparkles, ArrowRightLeft, Menu, X, User, LogOut, Bell, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/Button';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const navigate = useNavigate();
   const { state, dispatch } = useApp();
+  const { user, isAuthenticated, signOut } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch({ type: 'SET_SEARCH_QUERY', payload: searchValue });
     navigate('/items');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('登出失败:', error);
+    }
   };
 
   const navLinks = [
@@ -54,26 +65,59 @@ export function Navbar() {
 
           {/* 右侧操作 - 桌面端 */}
           <div className="hidden md:flex items-center gap-4">
-            <Button
-              variant="primary"
-              onClick={() => navigate('/publish')}
-              className="gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              发布闲置
-            </Button>
-            <button
-              onClick={() => navigate('/favorites')}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/5 text-text-secondary hover:text-primary transition-colors"
-            >
-              <Heart className="w-5 h-5" />
-              收藏
-              {state.favorites.itemIds.length + state.favorites.skillIds.length > 0 && (
-                <span className="ml-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {state.favorites.itemIds.length + state.favorites.skillIds.length}
-                </span>
-              )}
-            </button>
+            {isAuthenticated ? (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={() => navigate('/publish')}
+                  className="gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  发布闲置
+                </Button>
+                <button
+                  onClick={() => navigate('/favorites')}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/5 text-text-secondary hover:text-primary transition-colors"
+                >
+                  <Heart className="w-5 h-5" />
+                  收藏
+                  {state.favorites.itemIds.length + state.favorites.skillIds.length > 0 && (
+                    <span className="ml-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {state.favorites.itemIds.length + state.favorites.skillIds.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => navigate('/messages')}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/5 text-text-secondary hover:text-primary transition-colors"
+                >
+                  <Bell className="w-5 h-5" />
+                  消息
+                </button>
+                <button
+                  onClick={() => navigate('/orders')}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/5 text-text-secondary hover:text-primary transition-colors"
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  订单
+                </button>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/5 text-text-secondary hover:text-primary transition-colors"
+                >
+                  <User className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="p-2 rounded-lg hover:bg-gray-100 text-text-muted hover:text-red-600 transition-colors"
+                  title="退出登录"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </>
+            ) : (
+              <Button onClick={() => navigate('/auth')}>登录 / 注册</Button>
+            )}
           </div>
 
           {/* 移动端菜单按钮 */}
@@ -106,7 +150,7 @@ export function Navbar() {
               />
             </div>
           </form>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -134,6 +178,35 @@ export function Navbar() {
               <Heart className="w-6 h-6" />
               <span className="text-xs">收藏</span>
             </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/orders"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex flex-col items-center gap-1 p-3 rounded-xl hover:bg-primary/5 text-text-secondary hover:text-primary transition-colors"
+                >
+                  <ShoppingBag className="w-6 h-6" />
+                  <span className="text-xs">订单</span>
+                </Link>
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex flex-col items-center gap-1 p-3 rounded-xl hover:bg-primary/5 text-text-secondary hover:text-primary transition-colors"
+                >
+                  <User className="w-6 h-6" />
+                  <span className="text-xs">我的</span>
+                </Link>
+              </>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex flex-col items-center gap-1 p-3 rounded-xl hover:bg-primary/5 text-primary"
+              >
+                <User className="w-6 h-6" />
+                <span className="text-xs">登录</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>

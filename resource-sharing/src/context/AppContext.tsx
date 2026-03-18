@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { Resource, UserFavorites, ResourceType, UserHistory, Review, ExchangeRequest } from '@/types';
 import { initialItems, initialSkills } from '@/data/initialData';
+import { supabase, type Resources as DBResources, type Favorites as DBFavorites } from '@/lib/supabase';
+import { useAuth } from './AuthContext';
 
 const STORAGE_KEY = 'resource-sharing-data';
 
@@ -160,34 +162,114 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // 从 LocalStorage 加载数据
   useEffect(() => {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        dispatch({ type: 'LOAD_DATA', payload: { ...initialState, ...parsed } });
-      } catch (e) {
-        console.error('Failed to parse saved data:', e);
-      }
-    }
-  }, []);
+    const loadData = async () => {
+      if (!user) return;
 
-  // 保存数据到 LocalStorage
-  useEffect(() => {
-    const dataToSave = {
-      items: state.items,
-      skills: state.skills,
-      favorites: state.favorites,
+      try {
+        const { data: resourcesData, error: resourcesError } = await supabase
+          .from('resources')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (resourcesError) throw resourcesError;
+
+        if (resourcesData) {
+          const items = resourcesData
+            .filter((r: DBResources) => r.type === 'item')
+            .map((r: DBResources) => ({
+              id: r.id,
+              title: r.title,
+              description: r.description,
+              price: r.price,
+              image: r.image_url,
+              category: r.category,
+              sellerId: r.seller_id,
+              contact: r.contact,
+              location: r.location,
+              campusZone: r.campus_zone,
+              buildingName: r.building_name,
+              views: r.views,
+              isFeatured: r.is_featured,
+              rating: r.rating,
+              ratingCount: r.rating_count,
+              tags: r.tags,
+              availableForExchange: r.available_for_exchange,
+              deliveryType: r.delivery_type,
+              deliverySpeed: r.delivery_speed,
+              isFreeGift: r.is_free_gift,
+              allowBundle: r.allow_bundle,
+              createdAt: r.created_at,
+              expiresAt: r.expires_at,
+            }));
+
+          const skills = resourcesData
+            .filter((r: DBResources) => r.type === 'skill')
+            .map((r: DBResources) => ({
+              id: r.id,
+              title: r.title,
+              description: r.description,
+              price: r.price,
+              image: r.image_url,
+              category: r.category,
+              sellerId: r.seller_id,
+              contact: r.contact,
+              location: r.location,
+              campusZone: r.campus_zone,
+              buildingName: r.building_name,
+              views: r.views,
+              isFeatured: r.is_featured,
+              rating: r.rating,
+              ratingCount: r.rating_count,
+              tags: r.tags,
+              availableForExchange: r.available_for_exchange,
+              deliveryType: r.delivery_type,
+              deliverySpeed: r.delivery_speed,
+              isFreeGift: r.is_free_gift,
+              allowBundle: r.allow_bundle,
+              createdAt: r.created_at,
+              expiresAt: r.expires_at,
+            }));
+
+          dispatch({ type: 'SET_ITEMS', payload: items });
+          dispatch({ type: 'SET_SKILLS', payload: skills });
+        }
+
+        const { data: favoritesData, error: favoritesError } = await supabase
+          .from('favorites')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (favoritesError) throw favoritesError;
+
+        if (favoritesData) {
+          const itemIds = favoritesData
+            .filter((f: DBFavorites) => f.resource_type === 'item')
+            .map((f: DBFavorites) => f.resource_id);
+          const skillIds = favoritesData
+            .filter((f: DBFavorites) => f.resource_type === 'skill')
+            .map((f: DBFavorites) => f.resource_id);
+
+          dispatch({
+            type: 'LOAD_DATA',
+            payload: {
+              ...state,
+              favorites: { itemIds, skillIds },
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load data from Supabase:', error);
+      }
     };
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-    } catch (e) {
-      console.error('Failed to save data:', e);
-    }
-  }, [state.items, state.skills, state.favorites]);
+
+    loadData();
+  }, [user]);
+
+
 
   const getFavoriteItems = () => {
     return state.items.filter((item) => state.favorites.itemIds.includes(item.id));
@@ -264,17 +346,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'ADD_REVIEW', payload: newReview });
   };
 
-  const createExchangeRequest = (offerItemId: string, requestItemId: string) => {
-    const newRequest: ExchangeRequest = {
-      id: `exchange-${Date.now()}`,
-      fromUserId: 'current-user',
-      toUserId: 'other-user',
-      offerItemId,
-      requestItemId,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    };
-    dispatch({ type: 'ADD_EXCHANGE_REQUEST', payload: newRequest });
+  const createExchangeRequest = async (offerItemId: string, requestItemId: string) => {
+    if (!user) {
+      alert('请先登录');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('exchange_requests').insert({
+        from_user_id: user.id,
+        to_user_id: 'other-user',
+        offer_item_id: offerItemId,
+        request_item_id: requestItemId,
+        status: 'pending',
+      });
+
+      if (error) throw error;
+
+      const newRequest: ExchangeRequest = {
+        id: `exchange-${Date.now()}`,
+        fromUserId: user.id,
+        toUserId: 'other-user',
+        offerItemId,
+        requestItemId,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      };
+      dispatch({ type: 'ADD_EXCHANGE_REQUEST', payload: newRequest });
+    } catch (error) {
+      console.error('Failed to create exchange request:', error);
+      alert('创建交换请求失败');
+    }
   };
 
   const updateExchangeStatus = (id: string, status: ExchangeRequest['status']) => {
