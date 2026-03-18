@@ -1,8 +1,10 @@
 import { supabase } from './supabase';
 import type { User as SupabaseUser, AuthError as SupabaseAuthError } from '@supabase/supabase-js';
 
+export type User = SupabaseUser;
+
 export interface AuthState {
-  user: SupabaseUser | null;
+  user: User | null;
   loading: boolean;
 }
 
