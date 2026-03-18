@@ -19,14 +19,14 @@ export function DetailPage() {
   const { user, isAuthenticated } = useAuth();
   const [isPurchasing, setIsPurchasing] = useState(false);
 
-  const canPurchase = isAuthenticated && user && resource && user.id !== resource.sellerId;
-
   // 通过路由路径判断资源类型
   const isItemRoute = location.pathname.startsWith('/items');
   const resourceType: 'item' | 'skill' = isItemRoute ? 'item' : 'skill';
   const resources = resourceType === 'item' ? state.items : state.skills;
   const resource = resources.find((r) => r.id === id);
   const favorite = resource ? isFavorite(resource.id, resource.type) : false;
+
+  const canPurchase = isAuthenticated && user && resource && user.id !== resource.sellerId;
 
   const categories = resourceType === 'item' ? ITEM_CATEGORIES : SKILL_CATEGORIES;
   const category = resource?.category ? categories.find((c) => c.value === resource.category) : null;

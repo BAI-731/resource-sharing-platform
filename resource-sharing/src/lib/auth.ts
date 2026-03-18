@@ -1,8 +1,8 @@
 import { supabase } from './supabase';
-import type { AuthError, User } from '@supabase/supabase-js';
+import type { User as SupabaseUser, AuthError as SupabaseAuthError } from '@supabase/supabase-js';
 
 export interface AuthState {
-  user: User | null;
+  user: SupabaseUser | null;
   loading: boolean;
 }
 
@@ -16,7 +16,7 @@ export interface RegisterCredentials extends LoginCredentials {
 }
 
 export class AuthError extends Error {
-  constructor(message: string, public originalError?: AuthError) {
+  constructor(message: string, public originalError?: SupabaseAuthError) {
     super(message);
     this.name = 'AuthError';
   }

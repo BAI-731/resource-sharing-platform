@@ -182,6 +182,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             .filter((r: DBResources) => r.type === 'item')
             .map((r: DBResources) => ({
               id: r.id,
+              type: r.type,
               title: r.title,
               description: r.description,
               price: r.price,
@@ -210,6 +211,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             .filter((r: DBResources) => r.type === 'skill')
             .map((r: DBResources) => ({
               id: r.id,
+              type: r.type,
               title: r.title,
               description: r.description,
               price: r.price,
